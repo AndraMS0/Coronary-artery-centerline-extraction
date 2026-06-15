@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+env/
+
+# VS Code
+.vscode/
+
+# Medical data
+*.nii
+*.nii.gz
+
+# Trained models
+*.pth
+
+# Prediction outputs
+*.npy
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Windows
+Thumbs.db
