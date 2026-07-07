@@ -12,7 +12,7 @@ output_dir = r"C:/Users/andra/OneDrive/Desktop/DIS/coronary_project/centerlines/
 os.makedirs(output_dir, exist_ok=True)
 
 # ==================================================
-# SIMPLE 3D MORPHOLOGICAL SKELETONIZATION
+# MORPHOLOGICAL SKELETONIZATION
 # ==================================================
 def skeletonize_3d_scipy(mask):
     mask = mask.astype(bool)
@@ -33,9 +33,15 @@ def skeletonize_3d_scipy(mask):
 # ==================================================
 # PROCESS ALL PREDICTION MASKS
 # ==================================================
-files = sorted([f for f in os.listdir(prediction_dir) if f.endswith(".nii.gz")])
+files = sorted([
+    f for f in os.listdir(prediction_dir)
+    if f.endswith("_pred.nii.gz")
+])
 
 print("Prediction masks found:", len(files))
+
+if len(files) == 0:
+    raise RuntimeError("No prediction masks found. Run infer.py first.")
 
 for filename in files:
     print("\nProcessing:", filename)
@@ -49,18 +55,28 @@ for filename in files:
     mask = (mask > 0).astype(np.uint8)
 
     print("Mask shape:", mask.shape)
+    print("Vessel voxels before cleanup:", int(np.sum(mask)))
 
-    # optional cleanup
+    if np.sum(mask) == 0:
+        print("Empty mask, skipping.")
+        continue
+
+    # cleanup
     mask = ndimage.binary_closing(mask, iterations=1)
     mask = ndimage.binary_fill_holes(mask)
+    mask = mask.astype(np.uint8)
+
+    print("Vessel voxels after cleanup:", int(np.sum(mask)))
 
     # centerline extraction
     centerline = skeletonize_3d_scipy(mask)
 
+    print("Centerline voxels:", int(np.sum(centerline)))
+
     output_name = filename.replace("_pred.nii.gz", "_centerline.nii.gz")
     output_path = os.path.join(output_dir, output_name)
 
-    centerline_img = sitk.GetImageFromArray(centerline)
+    centerline_img = sitk.GetImageFromArray(centerline.astype(np.uint8))
 
     # keep metadata from prediction mask
     centerline_img.CopyInformation(mask_img)

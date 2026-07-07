@@ -1,0 +1,8 @@
+Segmentation Evaluation Summary
+===============================
+
+Cases evaluated: 150
+Mean Dice: 0.4933
+Mean IoU: 0.3299
+Mean Precision: 0.4097
+Mean Recall: 0.6413
